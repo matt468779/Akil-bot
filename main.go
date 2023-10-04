@@ -1,6 +1,7 @@
 package main
 
 import (
+	"akil_telegram_bot/gpt"
 	"encoding/json"
 	"io"
 	"log"
@@ -50,7 +51,7 @@ func webhookHandler(c *gin.Context) {
 		return
 	}
 
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, gpt.GetResponse(update.Message.Text))
 	bot.Send(msg)
 	// to monitor changes run: heroku logs --tail
 	log.Printf("From: %+v Text: %+v\n", update.Message.From, update.Message.Text)

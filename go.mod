@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
+	github.com/sashabaranov/go-openai v1.15.4
 )
 
 require (
