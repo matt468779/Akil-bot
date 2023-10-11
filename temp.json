@@ -1,0 +1,124 @@
+{
+  "edited_message": {
+    "update_id": 255158125,
+    "edited_message": {
+      "message_id": 330,
+      "from": {
+        "id": 384377846,
+        "is_bot": false,
+        "first_name": "MaTT",
+        "username": "MaTT7",
+        "language_code": "en"
+      },
+      "chat": {
+        "id": 384377846,
+        "first_name": "MaTT",
+        "username": "MaTT7",
+        "type": "private"
+      },
+      "date": 1696925249,
+      "edit_date": 1696925266,
+      "text": "hello"
+    }
+  },
+
+  "bot_command": {
+    "update_id": 255158123,
+    "message": {
+      "message_id": 329,
+      "from": {
+        "id": 384377846,
+        "is_bot": false,
+        "first_name": "MaTT",
+        "username": "MaTT7",
+        "language_code": "en"
+      },
+      "chat": {
+        "id": 384377846,
+        "first_name": "MaTT",
+        "username": "MaTT7",
+        "type": "private"
+      },
+      "date": 1696925218,
+      "text": "/profile",
+      "entities": [
+        {
+          "offset": 0,
+          "length": 8,
+          "type": "bot_command"
+        }
+      ]
+    }
+  },
+  "normal_message": {
+    "update_id": 255158124,
+    "message": {
+      "message_id": 330,
+      "from": {
+        "id": 384377846,
+        "is_bot": false,
+        "first_name": "MaTT",
+        "username": "MaTT7",
+        "language_code": "en"
+      },
+      "chat": {
+        "id": 384377846,
+        "first_name": "MaTT",
+        "username": "MaTT7",
+        "type": "private"
+      },
+      "date": 1696925249,
+      "text": "hi"
+    }
+  },
+
+  "callback_query": {
+    "update_id": 255158126,
+    "callback_query": {
+      "id": "1650890278696585608",
+      "from": {
+        "id": 384377846,
+        "is_bot": false,
+        "first_name": "MaTT",
+        "username": "MaTT7",
+        "language_code": "en"
+      },
+      "message": {
+        "message_id": 268,
+        "from": {
+          "id": 6499224746,
+          "is_bot": true,
+          "first_name": "Akil",
+          "username": "akilconnectbot"
+        },
+        "chat": {
+          "id": 384377846,
+          "first_name": "MaTT",
+          "username": "MaTT7",
+          "type": "private"
+        },
+        "date": 1696512468,
+        "text": "This is a regular message with some hidden text: hidden",
+        "reply_markup": {
+          "inline_keyboard": [
+            [
+              {
+                "text": "1.com",
+                "url": "http://t.me/akilconnectbot?start=12345"
+              },
+              { "text": "2", "callback_data": "2" },
+              { "text": "3", "callback_data": "3" }
+            ],
+            [
+              { "text": "4", "callback_data": "4" },
+              { "text": "5", "callback_data": "5" },
+              { "text": "6", "callback_data": "6" }
+            ]
+          ]
+        }
+      },
+      "chat_instance": "471207783529872363",
+      "data": "6"
+    }
+  }
+}
