@@ -36,8 +36,8 @@ func (tr *telegramRepository) GetMessages(c context.Context, update *domain.Upda
 	}
 
 	findOptions := options.Find()
-	findOptions.SetSort(bson.D{{Key: "message.date", Value: 1}})
-	findOptions.SetLimit(20)
+	findOptions.SetSort(bson.D{{Key: "message.date", Value: -1}})
+	findOptions.SetLimit(10)
 	cursor, err := coll.Find(c, filter, findOptions)
 	if err != nil {
 		log.Println(err)
@@ -53,5 +53,10 @@ func (tr *telegramRepository) GetMessages(c context.Context, update *domain.Upda
 
 		result = append(result, resUpdate)
 	}
+
+	for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
+		result[i], result[j] = result[j], result[i]
+	}
+
 	return result
 }

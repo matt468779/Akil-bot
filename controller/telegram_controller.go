@@ -3,6 +3,7 @@ package controller
 import (
 	"akil_telegram_bot/domain"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 
@@ -37,9 +38,10 @@ func (tc *TelegramController) HandleWebhook(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("%s\n", bytes)
 	if update.Message != nil {
 		if update.Message.IsCommand() {
-			tc.TelegramUsecase.HandlePlainText(c, parseUpdate)
+			tc.TelegramUsecase.HandleCommand(c, update)
 		} else {
 			tc.TelegramUsecase.HandlePlainText(c, parseUpdate)
 		}

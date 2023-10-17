@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-go build -o ./app main.go domain/telegram.go gpt/gpt.go
+go build -o ./app cmd/main.go

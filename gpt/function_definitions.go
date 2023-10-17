@@ -30,16 +30,28 @@ var Functions = []openai.FunctionDefinition{
 		Parameters: jsonschema.Definition{
 			Type: jsonschema.Object,
 			Properties: map[string]jsonschema.Definition{
-				"name": {
+				"keyword": {
 					Type:        jsonschema.String,
-					Description: "The name of the organization",
+					Description: "The keyword could be the name of the organization, the opportunity type or category etc. this value is going to be searched in every field and try to pick one",
 				},
-				"address": {
+				"opportunityType": {
+					Type: jsonschema.String,
+					Enum: []string{"virtual", "in-person"},
+				},
+				"categories": {
+					Type: jsonschema.String,
+					Enum: []string{"Technology", "Education", "Health", "Economic Development", "Food and Nutrition", "Disaster Response and Recovery", "Child and Maternal Health"},
+				},
+				"organizationType": {
+					Type: jsonschema.String,
+					Enum: []string{"local", "international"},
+				},
+				"location": {
 					Type:        jsonschema.String,
 					Description: "Location of the opportunity",
 				},
 			},
-			Required: []string{"location"},
+			Required: []string{"keyword"},
 		},
 	},
 }
@@ -50,6 +62,9 @@ type OrganizationFilter struct {
 }
 
 type OpportunityFilter struct {
-	Name    string `json:"name"`
-	Address string `json:"address"`
+	Keyword          string   `json:"keyword" url:"keyword"`
+	OpportunityType  string   `json:"opportunityType" url:"opportunityType"`
+	Categories       []string `json:"categories" url:"categories"`
+	OrganizationType string   `json:"organizationType" url:"organizationType"`
+	Location         []string `json:"location" url:"location"`
 }

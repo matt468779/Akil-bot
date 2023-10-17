@@ -19,11 +19,12 @@ type Env struct {
 	ChannelID         int    `mapstructure:"CHANNEL_ID"`
 	SystemMessagePath string `mapstructure:"SYSTEM_MESSAGE_PATH"`
 	BackendURL        string `mapstructure:"BACKEND_URL"`
+	FrontendURL       string `mapstructure:"FRONTEND_URL"`
 }
 
 func NewEnv() *Env {
 	env := Env{}
-	viper.SetConfigFile("/etc/secrets/.env")
+	viper.SetConfigFile(".env")
 
 	err := viper.ReadInConfig()
 	if err != nil {

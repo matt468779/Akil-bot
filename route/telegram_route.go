@@ -16,7 +16,7 @@ import (
 func NewTelegramRouter(env *bootstrap.Env, timeout time.Duration, db mongo.Database, group *gin.RouterGroup, bot *tgbotapi.BotAPI) {
 	tr := repository.NewTelegramRepository(db, domain.CollectionUpdate)
 	tc := &controller.TelegramController{
-		TelegramUsecase: usecase.NewTelegramUsecase(tr, timeout, bot),
+		TelegramUsecase: usecase.NewTelegramUsecase(tr, timeout, bot, env),
 	}
 	group.POST("/"+env.BotToken, tc.HandleWebhook)
 }

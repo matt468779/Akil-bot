@@ -1,27 +1,37 @@
 package usecase
 
 import (
+	"akil_telegram_bot/bootstrap"
 	"akil_telegram_bot/domain"
 	"akil_telegram_bot/gpt"
 	"context"
+	"encoding/json"
+	"io"
 	"log"
+	"net/http"
+	"strings"
 	"time"
 
 	"fmt"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/google/go-querystring/query"
 	"github.com/sashabaranov/go-openai"
 )
 
 type telegramUsecase struct {
 	telegramRepository domain.TelegramRepository
 	bot                *tgbotapi.BotAPI
+	env                *bootstrap.Env
 }
 
-func NewTelegramUsecase(telegramRepository domain.TelegramRepository, timeout time.Duration, Bot *tgbotapi.BotAPI) domain.TelegramUsecase {
+var err error
+
+func NewTelegramUsecase(telegramRepository domain.TelegramRepository, timeout time.Duration, Bot *tgbotapi.BotAPI, env *bootstrap.Env) domain.TelegramUsecase {
 	return &telegramUsecase{
 		telegramRepository: telegramRepository,
 		bot:                Bot,
+		env:                env,
 	}
 }
 
@@ -59,23 +69,90 @@ func (tu *telegramUsecase) HandlePlainText(c context.Context, update domain.Upda
 }
 
 func (tu *telegramUsecase) HandleCommand(c context.Context, update tgbotapi.Update) error {
-	msg := tgbotapi.NewMessage(int64(update.Message.Chat.ID), "This is a command")
-	msg.ParseMode = tgbotapi.ModeMarkdownV2
+	chatId := update.Message.Chat.ID
+	command := update.Message.Command()
 
-	_, err := tu.bot.Send(msg)
-	return err
+	if command == "opportunities" {
+		return startOpportunities(tu.bot, chatId, update)
+	}
+
+	return nil
 }
 
 func (tu *telegramUsecase) HandleCallbackQuery(c context.Context, update tgbotapi.Update) error {
-	editMessage := tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, tgbotapi.NewInlineKeyboardMarkup([]tgbotapi.InlineKeyboardButton{}))
-	if _, err := tu.bot.Send(editMessage); err != nil {
+	data := strings.Split(update.CallbackQuery.Data, ",")
+	selected := data[1]
+
+	callback := tgbotapi.NewCallback(update.CallbackQuery.ID, selected)
+	if _, err := tu.bot.Request(callback); err != nil {
 		panic(err)
 	}
-	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
-	if _, err := tu.bot.Send(msg); err != nil {
-		panic(err)
+
+	// editMessage := tgbotapi.NewEditMessageReplyMarkup(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID, tgbotapi.NewInlineKeyboardMarkup([]tgbotapi.InlineKeyboardButton{}))
+	// deleteMessage := tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID)
+	// if _, err := tu.bot.Send(deleteMessage); err != nil {
+	// 	println(err)
+	// }
+
+	chatId := update.CallbackQuery.Message.Chat.ID
+	// callbackId := update.CallbackQuery.ID
+
+	keyboard := update.CallbackQuery.Message.ReplyMarkup.InlineKeyboard
+	prevData := *keyboard[len(keyboard)-1][0].CallbackData
+
+	cummulatedData := prevData + "," + selected
+
+	currState := data[0]
+
+	if currState == "typeOfEmploy" {
+		chooseCategories(cummulatedData, chatId, tu.bot)
+	} else if currState == "category" {
+		searchOpportunities(cummulatedData, chatId, tu.bot, tu.env.BackendURL)
 	}
+
 	return nil
+}
+
+func searchOpportunities(data string, chatId int64, bot *tgbotapi.BotAPI, url string) {
+	searchURL := url + "opportunities/search?"
+
+	opportunityFilter := gpt.OpportunityFilter{}
+	arguments := strings.Split(data, ",")
+	opportunityFilter.OpportunityType = arguments[1]
+	opportunityFilter.Categories = []string{arguments[2]}
+
+	// json.Unmarshal([]byte(arguments), &opportunityFilter)
+
+	queryString, err := query.Values(opportunityFilter)
+	if err != nil {
+		panic(err)
+	}
+	println(arguments)
+	println(searchURL + queryString.Encode())
+	res, err := http.Get(searchURL + queryString.Encode())
+	if err != nil {
+		panic(err)
+	}
+
+	result, _ := io.ReadAll(res.Body)
+	var opportunities Opportunity
+	json.Unmarshal(result, &opportunities)
+	msg := tgbotapi.NewMessage(chatId, FormatOpportunitiesMarkdown(opportunities.Data, url))
+	msg.ParseMode = tgbotapi.ModeMarkdownV2
+
+	if _, err = bot.Send(msg); err != nil {
+		panic(err)
+	}
+}
+
+func chooseCategories(data string, chatId int64, bot *tgbotapi.BotAPI) {
+	msg := tgbotapi.NewMessage(chatId, "Please choose category")
+	categoriesKeyboard.InlineKeyboard[len(categoriesKeyboard.InlineKeyboard)-1][0].CallbackData = &data
+	msg.ReplyMarkup = categoriesKeyboard
+
+	if _, err = bot.Send(msg); err != nil {
+		panic(err)
+	}
 }
 
 func (tu *telegramUsecase) PostOpportunityToChannel(username string, message string, opportunityId int) {
@@ -84,7 +161,7 @@ func (tu *telegramUsecase) PostOpportunityToChannel(username string, message str
 	applyButton := tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonURL("Apply", goToBotLink))
 	applyMarkup := tgbotapi.NewInlineKeyboardMarkup(applyButton)
 	msg.ReplyMarkup = applyMarkup
-	var err error
+
 	if _, err = tu.bot.Send(msg); err != nil {
 		panic(err)
 	}
@@ -105,4 +182,15 @@ func parseMessages(updates []domain.Update) []openai.ChatCompletionMessage {
 	}
 
 	return messages
+}
+
+func startOpportunities(bot *tgbotapi.BotAPI, chatId int64, update tgbotapi.Update) error {
+	msg := tgbotapi.NewMessage(chatId, "Choose Type of Employment")
+	msg.ReplyMarkup = typeOfEmploymentKeyboard
+
+	if _, err = bot.Send(msg); err != nil {
+		panic(err)
+	}
+
+	return err
 }
