@@ -107,14 +107,14 @@ func (tu *telegramUsecase) HandleCallbackQuery(c context.Context, update tgbotap
 	if currState == "typeOfEmploy" {
 		chooseCategories(cummulatedData, chatId, tu.bot)
 	} else if currState == "category" {
-		searchOpportunities(cummulatedData, chatId, tu.bot, tu.env.BackendURL)
+		searchOpportunities(cummulatedData, chatId, tu.bot, tu.env.BackendURL, tu.env.FrontendURL)
 	}
 
 	return nil
 }
 
-func searchOpportunities(data string, chatId int64, bot *tgbotapi.BotAPI, url string) {
-	searchURL := url + "opportunities/search?"
+func searchOpportunities(data string, chatId int64, bot *tgbotapi.BotAPI, backendURL string, frontendURL string) {
+	searchURL := backendURL + "opportunities/search?"
 
 	opportunityFilter := gpt.OpportunityFilter{}
 	arguments := strings.Split(data, ",")
@@ -137,7 +137,7 @@ func searchOpportunities(data string, chatId int64, bot *tgbotapi.BotAPI, url st
 	result, _ := io.ReadAll(res.Body)
 	var opportunities Opportunity
 	json.Unmarshal(result, &opportunities)
-	msg := tgbotapi.NewMessage(chatId, FormatOpportunitiesMarkdown(opportunities.Data, url))
+	msg := tgbotapi.NewMessage(chatId, FormatOpportunitiesMarkdown(opportunities.Data, frontendURL))
 	msg.ParseMode = tgbotapi.ModeMarkdownV2
 
 	if _, err = bot.Send(msg); err != nil {

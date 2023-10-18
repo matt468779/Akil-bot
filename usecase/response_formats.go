@@ -44,7 +44,7 @@ func FormatOpportunitiesMarkdown(opportunityData []OpportunityData, baseURL stri
 	for _, opportunityData := range opportunityData {
 
 		// Title
-		builder.WriteString(fmt.Sprintf("🌟 *[%s](%sopportunities/%s)* 🌟\n", tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, opportunityData.Title), tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, baseURL), tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, opportunityData.ID)))
+		builder.WriteString(fmt.Sprintf("🌟 *[%s](%sorganization/opportunities/%s)* 🌟\n", tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, opportunityData.Title), tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, baseURL), tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, opportunityData.ID)))
 
 		// Description
 		description := opportunityData.Description
